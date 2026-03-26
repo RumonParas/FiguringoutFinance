@@ -1,0 +1,31 @@
+# 📉 Yield Curve Principal Component Analysis (PCA)
+Unsupervised Learning for Fixed-Income Risk Management
+
+## 📌 Project Overview
+This project applies Principal Component Analysis (PCA) to the US Treasury Yield Curve to solve the pervasive issue of multicollinearity in fixed-income modeling. By compressing 11 highly correlated bond maturities into 3 uncorrelated mathematical factors, the model successfully captures ~88% of the total variance in the bond market over the last decade.
+
+## 🧠 Economic Rationale & Feature Engineering
+When modeling macroeconomic variables or pricing fixed-income derivatives, feeding a machine learning model the entire yield curve (1-Month to 30-Year) causes mathematical instability because the bonds move in tandem. 
+
+ The Data Pipeline Fetched 10 years of pristine daily US Treasury yields from the Federal Reserve Economic Data (FRED) API.
+ Transformations Converted absolute yields into daily basis-point changes to model the movement of the curve, followed by standard scaling (Z-scores) to ensure short-term volatility didn't outweigh long-term trends.
+ Dimensionality Reduction Deployed `scikit-learn`'s PCA engine to extract the underlying, invisible macroeconomic forces driving the market.
+
+## 🔬 The Factor Loadings (Empirical Macroeconomics)
+The algorithm, completely blind to economic theory, mathematically deduced the three fundamental laws of fixed-income trading
+
+1. PC1 (The Level - 65.1% Variance) A parallel shift metric. Empirically proves that while the Federal Reserve anchors the 1-Month rate via policy, inflation expectations cause the 2-Year through 30-Year maturities to float uniformly.
+2. PC2 (The Steepness - 14.4% Variance) A curve-slope metric pivoting at the 5-Year mark. Accurately models economic cycle expectations (FlattenerSteepener regimes).
+3. PC3 (The Curvature - 8.9% Variance) A mid-curve convexity metric. Models medium-term supplydemand dislocations in the belly of the curve, enabling Butterfly Spread trading strategies.
+
+## 📊 Business Application Institutional Risk Management
+This model serves as the foundational layer for an institutional risk engine
+ Factor Sensitivities Replaces traditional 11-bucket Key Rate Duration with 3 pure PCA factor exposures.
+ Stress Testing Enables Chief Risk Officers to simulate historical scenarios (e.g., Apply a 3-Sigma shock to PC2 to simulate a sudden 2008-style yield curve steepening).
+ Hedging Allows portfolio managers to isolate and hedge against structural inflation (PC1) without neutralizing their alpha bets on the economic cycle (PC2).
+
+## 🛠️ Tech Stack
+ Data Sourcing `pandas-datareader` (FRED API)
+ Data Engineering `Python`, `Pandas`, `NumPy`
+ Machine Learning `scikit-learn` (PCA, StandardScaler)
+ Visualization `Matplotlib`
