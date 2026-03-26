@@ -1,0 +1,31 @@
+# 📈 Macro-Regime Tail Risk Predictor
+**A Walk-Forward XGBoost Model for Nifty 50 Volatility Shocks**
+
+## 📌 Project Overview
+This project shifts away from traditional, noisy "directional" forecasting (predicting if a market will go Up or Down) and instead focuses on predicting **Magnitude**. By engineering global macroeconomic shock indicators, this XGBoost model acts as a "tail-risk sniper," identifying the top 25% most violent weeks in the Indian equity market (Nifty 50) to dynamically trigger asymmetric options hedges (e.g., Long Straddles).
+
+## 🧠 Economic Rationale & Feature Engineering
+Raw asset prices and standard percentage returns fail to capture institutional panic. I engineered a custom dataset combining absolute levels, rolling volatility, and multi-timeframe statistical shocks (Z-Scores) to give the algorithm historical macro context.
+
+* **The Features ($X$):** Evaluated Crude Oil, Gold, USD/INR, and the US 10-Year Treasury Yield. 
+* **Dimensionality Reduction:** Conducted iterative feature pruning to eliminate multicollinearity. The algorithm mathematically proved that a 20-day (1-month) sustained Z-score shock in US Yields and Oil holds significantly more predictive power than short-term 5-day noise.
+* **The Target ($y$):** Binarized the future 5-day absolute return of the Nifty 50. Moves exceeding the 75th percentile were labeled as `1` (High Volatility Event).
+
+## ⚙️ Model Architecture & Anti-Leakage Protocols
+Financial time series is highly susceptible to look-ahead bias. The architecture was specifically designed to mirror live trading conditions:
+* **The Engine:** Deployed an `XGBClassifier`, leveraging its sequential boosting to isolate rare, non-linear macro anomalies. Imbalanced classes (75% normal / 25% shock) were managed using the `scale_pos_weight` parameter.
+* **Walk-Forward Validation:** Utilized `TimeSeriesSplit` across 5 chronological folds. The model strictly trained on expanding historical windows and tested on unseen, immediate future data. 
+
+## 📊 Performance & Risk Management
+The model was calibrated strictly for capital preservation. Instead of accepting the default 51% algorithmic confidence, I utilized a custom `.predict_proba()` threshold of **70%** to limit false positives, heavily reducing Theta decay bleed on options hedges.
+
+* **Out-of-Sample Precision: ~39%**
+* **Out-of-Sample Recall: ~4%**
+* **Strategic Takeaway:** The model is a highly conservative tail-risk detector. While it ignores the majority of market shocks (low recall), its 39% precision yields a mathematically positive expected value when paired with asymmetric payout structures. It fires rarely, but with high conviction.
+
+## 🔬 Failed Experiments (The VIX Rejection)
+In an attempt to increase Recall, I injected the India VIX (domestic implied volatility) into the feature set. Walk-forward backtesting caused Precision to crash from 39% to 22%. This proved that for this specific global-macro setup, the domestic VIX acts as a *coincident/lagging* indicator. Foreign Institutional Investor (FII) capital flight is triggered by global yields and currency depreciation before it registers in the domestic options market. The VIX was rejected to preserve the clean global signal.
+
+## 🛠️ Tech Stack
+* **Data & Feature Engineering:** `Python`, `Pandas`, `NumPy`, `yfinance`
+* **Machine Learning:** `XGBoost`, `Scikit-Learn` (Walk-Forward Validation, Precision/Recall Metrics)
